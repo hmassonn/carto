@@ -1,1 +1,4 @@
 node_modules
+server/src/uncompress_files/*
+server/src/zip_files/*
+

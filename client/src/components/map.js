@@ -7,13 +7,13 @@ import './map.css';
 export default function Map() {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng, setLng] = useState(2.33333);
-  const [lat, setLat] = useState(48.866669);
-  const [zoom, setZoom] = useState(8);
+  const [inputValue, setInputValue] = useState({label:'',x:0,y:0});
+  const lng=2.33333;
+  const lat=48.866669;
+  const zoom=8;
 
   useEffect(() => {
     if (map.current) return; // stops map from intializing more than once
-
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
@@ -22,18 +22,23 @@ export default function Map() {
       zoom: zoom,
     });
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-    
-    new maplibregl.Marker({color: "#FF0000"})
-      .setLngLat([2.33333,48.866669])
-      .addTo(map.current);
+  }, []);
 
-  }, [lng, lat, zoom]);
+  useEffect(() => {
+    console.log('in', inputValue)
 
+    if (map.current && inputValue.label && inputValue.label !== "") {
+      new maplibregl.Marker({color: "#FF0000"})
+        .setLngLat([inputValue.x,inputValue.y])
+        .addTo(map.current);
+    }
+
+  }, [inputValue]);
 
   return (
     <div className="map-wrap">
-    <div className="heading">
-    <DataFetching/>
+      <div className="heading">
+        <DataFetching inputValue={inputValue} setInputValue={setInputValue} />
       </div>
       <div ref={mapContainer} className="map" />
     </div>

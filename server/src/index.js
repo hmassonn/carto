@@ -4,6 +4,7 @@ const readFile = require('./readFile');
 const cors = require('cors');
 const downloadZip = require('./downloadZip');
 const unzipFile = require('./unzipFile');
+const readXml = require('./readXml');
 
 const PORT = process.env.PORT || 3001;
 
@@ -35,7 +36,11 @@ app.get("/search", async (req, res) => {
 app.get("/find", async (req, res) => {
     try {
         downloadZip().then((token) => {
-            setTimeout(()=>{unzipFile(token)}, 1000);
+            setTimeout(()=>{
+                unzipFile(token).then(()=>{
+                    readXml(token);
+                });
+            }, 1000);
         });
     } catch (error) {
         console.error('Error :', error);

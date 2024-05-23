@@ -3,18 +3,14 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function DataFetching() {
+function DataFetching({inputValue, setInputValue}) {
   const [options, setOptions] = useState([]);
   const [error, setError] = useState(null);
-  const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState('');
+  const [open, setOpen] = useState(false);
   const loading = open && options.length === 0;
-
-  function handleSubmit () {};
 
   function fetching (query) {
     if (query.trim().length >= 3) {
-      console.log('ici', query)
       fetch('http://localhost:3001/search?q='+query)
       .then(response => {
         if (!response.ok) {
@@ -24,10 +20,8 @@ function DataFetching() {
       })
       .then(local_data => {
         let input_options = []
-        console.log('local_data', local_data)
         local_data.features.forEach(element => {
-          input_options.push({'label': element.properties.label})
-          // input_options.push({'label': element.properties.city+" "+element.properties.context})
+          input_options.push({'label': element.properties.label, 'x': element.geometry.coordinates[0], 'y': element.geometry.coordinates[1]})
         });
         setOptions(input_options);
       })
@@ -38,25 +32,16 @@ function DataFetching() {
   };
 
   function changeInput (input) {
-    console.log('opt', options)
     fetching(input);
   };
 
   if (error) return <div>Error: {error.message}</div>;
   // if (error) return <div>Error: problème inconnu, veuillez recharger la page</div>;
 
+  console.log('data', inputValue)
+
   return (
     <div className="search-bar">
-        {/* <form onSubmit={handleSubmit}>
-          <input
-            className="search-bar"
-            type="text"
-            placeholder="tapez votre adresse"
-            value={searchQuery}
-            onChange={(e) => changeInput(e?.target?.value)}
-          />
-          <button className="search-bar" type="submit">cherchez</button>
-        </form> */}
       <Autocomplete
         disablePortal
         id="combo-box-demo"
@@ -64,9 +49,13 @@ function DataFetching() {
         onOpen={() => { setOpen(true); }}
         onClose={() => { setOpen(false); }}
         options={options}
-        inputValue={inputValue}
         onInputChange={(event, newInputValue) => {
-          setInputValue(newInputValue);
+          options.forEach((opt)=>{
+            if (opt.label.localeCompare(newInputValue) === 0){
+              setInputValue({label: newInputValue, x: opt.x, y: opt.y});
+              console.log('for', inputValue, newInputValue, opt)
+            }
+          })
         }}
         sx={{ width: 300 }}
         loading={loading}
@@ -87,10 +76,10 @@ function DataFetching() {
           />
         )}
       />
-      {inputValue && (
+      {inputValue.label && (
         <div>
           <h3>Vous avez sélectionné :</h3>
-          <p>{inputValue}</p>
+          <p>{inputValue.label}</p>
         </div>
       )}
   </div>
