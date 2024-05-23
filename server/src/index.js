@@ -2,6 +2,8 @@
 const express = require("express");
 const readFile = require('./readFile');
 const cors = require('cors');
+const downloadZip = require('./downloadZip');
+const unzipFile = require('./unzipFile');
 
 const PORT = process.env.PORT || 3001;
 
@@ -24,6 +26,17 @@ app.get("/search", async (req, res) => {
         const data = await fetch("https://api-adresse.data.gouv.fr/search?q="+req.query.q)
         const result = await data.json()
         res.json(result)
+    } catch (error) {
+        console.error('Error :', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get("/find", async (req, res) => {
+    try {
+        downloadZip().then((token) => {
+            setTimeout(()=>{unzipFile(token)}, 1000);
+        });
     } catch (error) {
         console.error('Error :', error);
         res.status(500).json({ error: 'Internal server error' });
