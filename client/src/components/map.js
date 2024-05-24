@@ -3,6 +3,7 @@ import DataFetching from './DataFetching.js';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
+const BACK_SERVER = `http://localhost:3001/api`; // change DataFetching too, todo put in config file
 
 export default function Map() {
   const mapContainer = useRef(null);
@@ -17,7 +18,7 @@ export default function Map() {
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: `http://localhost:3001/api`,
+      style: BACK_SERVER,
       center: [lng, lat],
       zoom: zoom,
     });

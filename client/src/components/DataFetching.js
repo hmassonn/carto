@@ -3,6 +3,8 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
+const BACK_SERVER = "http://localhost:3001"; // change map too, todo put in config file
+
 function DataFetching({inputValue, setInputValue}) {
   const [options, setOptions] = useState([]);
   const [error, setError] = useState(null);
@@ -11,7 +13,7 @@ function DataFetching({inputValue, setInputValue}) {
 
   function fetching (query) {
     if (query.trim().length >= 3) {
-      fetch('http://localhost:3001/search?q='+query)
+      fetch(BACK_SERVER + '/search?q='+query)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
