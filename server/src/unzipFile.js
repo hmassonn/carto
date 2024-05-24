@@ -21,7 +21,7 @@ function unzipFile(file_name) {
 
       // Promesse pour gérer la fin de la décompression
       zipStream.on('close', () => {
-        console.log('new file: '+zipFilePath);
+        // console.log('new file: '+zipFilePath);
         resolve();
       });
 
