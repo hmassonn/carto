@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0px;
     background-color: lightgrey;
-    color: white;
+    color: black;
     text-align: center;
   }
   
@@ -10,3 +10,15 @@
     padding: 20px;
     margin: 0;
   }
+
+.right_card {
+    margin-left: auto;
+    margin-right: 30px;
+    margin-top: -20px;
+}
+
+.left_card {
+  margin-right: auto;
+  margin-left: 30px;
+  margin-top: -20px;
+}

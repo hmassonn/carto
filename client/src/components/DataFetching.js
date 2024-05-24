@@ -44,6 +44,12 @@ function fetching (query) {
 
   return (
     <div className="search-bar">
+        <div className="left_card">
+          <h3>Votre adresse est le marqueur vert </h3>
+          {inputValue.label && (
+            <p>{inputValue.label}</p>
+          )}
+        </div>
       <Autocomplete
         disablePortal
         id="combo-box-demo"
@@ -77,18 +83,14 @@ function fetching (query) {
           />
         )}
       />
-      {inputValue.label && (
-        <div>
-          <h3>Votre adresse est le marqueur vert :</h3>
-          <p>{inputValue.label}</p>
+        <div className="right_card">
+            <h3>la station est le marqueur jaune </h3>
+            {!stationTarget && inputValue.label && (<CircularProgress color="inherit" size={20} />)}
+            {stationTarget && (
+              <p>{stationTarget.adresse[0]}</p>
+            )}
         </div>
-      )}
-        {stationTarget && (
-        <div>
-          <h3>la station est le marqueur jaune :</h3>
-          <p>{stationTarget.adresse[0]}</p>
-        </div>
-      )}
+
   </div>
   );
 }
