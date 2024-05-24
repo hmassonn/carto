@@ -5,13 +5,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 const BACK_SERVER = "http://localhost:3001"; // change map too, todo put in config file
 
-function DataFetching({inputValue, setInputValue}) {
+function DataFetching({stationTarget, inputValue, setInputValue}) {
   const [options, setOptions] = useState([]);
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const loading = open && options.length === 0;
 
-  function fetching (query) {
+function fetching (query) {
     if (query.trim().length >= 3) {
       fetch(BACK_SERVER + '/search?q='+query)
       .then(response => {
@@ -22,16 +22,18 @@ function DataFetching({inputValue, setInputValue}) {
       })
       .then(local_data => {
         let input_options = []
-        local_data.features.forEach(element => {
-          input_options.push({'label': element.properties.label, 'x': element.geometry.coordinates[0], 'y': element.geometry.coordinates[1]})
-        });
-        setOptions(input_options);
+        if (local_data && local_data.features) {
+          local_data.features.forEach(element => {
+            input_options.push({'label': element.properties.label, 'x': element.geometry.coordinates[0], 'y': element.geometry.coordinates[1]})
+          });
+          setOptions(input_options);
+        }
       })
       .catch(error => {
         setError(error);
       });
     }
-  };
+};
 
   function changeInput (input) {
     fetching(input);
@@ -39,8 +41,6 @@ function DataFetching({inputValue, setInputValue}) {
 
   if (error) return <div>Error: {error.message}</div>;
   // if (error) return <div>Error: problème inconnu, veuillez recharger la page</div>;
-
-  console.log('data', inputValue)
 
   return (
     <div className="search-bar">
@@ -55,7 +55,6 @@ function DataFetching({inputValue, setInputValue}) {
           options.forEach((opt)=>{
             if (opt.label.localeCompare(newInputValue) === 0){
               setInputValue({label: newInputValue, x: opt.x, y: opt.y});
-              console.log('for', inputValue, newInputValue, opt)
             }
           })
         }}
@@ -80,8 +79,14 @@ function DataFetching({inputValue, setInputValue}) {
       />
       {inputValue.label && (
         <div>
-          <h3>Vous avez sélectionné :</h3>
+          <h3>Votre adresse est le marqueur vert :</h3>
           <p>{inputValue.label}</p>
+        </div>
+      )}
+        {stationTarget && (
+        <div>
+          <h3>la station est le marqueur jaune :</h3>
+          <p>{stationTarget.adresse[0]}</p>
         </div>
       )}
   </div>
