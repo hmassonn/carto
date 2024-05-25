@@ -2,45 +2,35 @@ import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
-
-const BACK_SERVER = "http://localhost:3001"; // change map too, todo put in config file
+import {BACK_SERVER} from '../Config';
 
 function DataFetching({stationTarget, inputValue, setInputValue}) {
   const [options, setOptions] = useState([]);
-  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const loading = open && options.length === 0;
 
-function fetching (query) {
+  const getAddress = async (query) => {
     if (query.trim().length >= 3) {
-      fetch(BACK_SERVER + '/search?q='+query)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(local_data => {
-        let input_options = []
+        const response = await fetch(BACK_SERVER + '/search?q=' + query)
+
+        if (!response.ok) throw Error('Network response was not ok');
+
+        const local_data =  await response.json();
+
         if (local_data && local_data.features) {
-          local_data.features.forEach(element => {
-            input_options.push({'label': element.properties.label, 'x': element.geometry.coordinates[0], 'y': element.geometry.coordinates[1]})
-          });
+          let input_options = []
+          local_data.features.map(element => {
+             input_options.push({
+                  'label': element.properties.label,
+                  'x': element.geometry.coordinates[0],
+                  'y': element.geometry.coordinates[1]
+              })
+            }
+          );
           setOptions(input_options);
         }
-      })
-      .catch(error => {
-        setError(error);
-      });
     }
-};
-
-  function changeInput (input) {
-    fetching(input);
-  };
-
-  if (error) return <div>Error: {error.message}</div>;
-  // if (error) return <div>Error: problème inconnu, veuillez recharger la page</div>;
+  }
 
   return (
     <div className="search-bar">
@@ -70,7 +60,7 @@ function fetching (query) {
           <TextField
             {...params}
             label="Tapez votre adresse"
-            onChange={(e) => changeInput(e?.target?.value)} 
+            onChange={(e) => getAddress(e?.target?.value)} 
             InputProps={{
               ...params.InputProps,
               endAdornment: (

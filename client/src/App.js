@@ -1,12 +1,13 @@
 import React from "react";
-import Navbar from './components/navbar.js';
 import Map from './components/map.js';
 import "./App.css";
 
 function App() {
   return (
     <div className="App">
-      <Navbar/>
+      <div className="heading">
+        <h1>trouver le carburant le moins cher</h1>
+      </div>
       <Map/>
     </div>
   );
