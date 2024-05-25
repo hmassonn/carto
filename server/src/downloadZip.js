@@ -16,6 +16,11 @@ async function downloadZip() {
           responseType: 'stream',
       });
   
+      const outputDir = path.resolve(__dirname, 'zip_files');
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
       // Générer un token de 32 octets (64 caractères hexadécimaux)
       const token = generateToken(32);
       const outputPath = path.resolve(__dirname+"/zip_files", token+".zip");
