@@ -18,7 +18,6 @@ function readXml(file_path) {
         if (err) {
           throw err;
         }
-        // Afficher l'objet JavaScript résultant
         // console.log(result.pdv_liste.pdv[0]);
         resolve(result);
       });

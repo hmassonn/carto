@@ -5,16 +5,14 @@ const cors = require('cors');
 const downloadZip = require('./downloadZip');
 const unzipFile = require('./unzipFile');
 const readXml = require('./readXml');
-const { all } = require("axios");
+const haversineDistance = require('./haversineDistance');
+const CONFIG = require('./config');
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
 
 app.use(cors()); // Ajoute le middleware CORS à toutes les routes
-
-const DISTANCE_MAX = 2; // in km
-const FUEL_TYPE = 'Gazole';
 
 app.get("/api", async (req, res) => {
   try {
@@ -37,62 +35,43 @@ app.get("/search", async (req, res) => {
     }
 });
 
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180);
-}
-  
-function haversineDistance(coord1, coord2) {
-    const R = 6371; // Rayon de la Terre en kilomètres
-
-    const lat1 = toRadians(coord1.y);
-    const lon1 = toRadians(coord1.x);
-    const lat2 = toRadians(coord2.y);
-    const lon2 = toRadians(coord2.x);
-  
-    const dLat = lat2 - lat1;
-    const dLon = lon2 - lon1;
-  
-    const a = Math.sin(dLat / 2) ** 2 +
-              Math.cos(lat1) * Math.cos(lat2) *
-              Math.sin(dLon / 2) ** 2;
-  
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
-    const distance = R * c;
-    return distance;
-}
-
+// TODO supprimer les fichiers zip et xml
 app.get("/find", async (req, res) => {
-    let all_stations = []
-    let price_min = -1;
-    let winner_station = {}
     try {
-        downloadZip().then((token) => {
-            setTimeout(()=>{
-                unzipFile(token).then(()=>{
-                    readXml(token).then((xml) => {
-                        if (xml && xml.pdv_liste && xml.pdv_liste.pdv) {
-                            all_stations = xml.pdv_liste.pdv.filter((element) => 
-                                haversineDistance({x: req.query.x, y: req.query.y}, {x: element.$.longitude / 100000, y: element.$.latitude / 100000}) < DISTANCE_MAX
-                            )
-                            all_stations.forEach(station => {
-                                if (station.prix) {
-                                    station.prix.forEach((price) => {
-                                        if (price_min == -1 || (price.$.nom == FUEL_TYPE && price.$.valeur < price_min)) {
-                                            price_min = price.$.valeur;
-                                            winner_station = station;
-                                        }
-                                    })
-                                }
-                            });
-                            res.json(winner_station)
+        // Téléchargez le fichier ZIP
+        const token = await downloadZip();
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Décompressez le fichier ZIP
+        await unzipFile(token);
+        
+        // Lisez le fichier XML
+        const xml = await readXml(token);
+        
+        if (xml && xml.pdv_liste && xml.pdv_liste.pdv) {
+            const all_stations = xml.pdv_liste.pdv.filter(element => 
+                haversineDistance({ x: req.query.x, y: req.query.y }, 
+                                  { x: element.$.longitude / 100000, y: element.$.latitude / 100000 }) < CONFIG.DISTANCE_MAX
+            );
+
+            // Trouver la station avec le prix minimum pour le type de carburant spécifié
+            const winner_station = all_stations.reduce((minStation, station) => {
+                if (station.prix) {
+                    station.prix.forEach(price => {
+                        if (price.$.nom === CONFIG.FUEL_TYPE && (minStation.price_min === -1 || price.$.valeur < minStation.price_min)) {
+                            minStation = { station: station, price_min: price.$.valeur };
                         }
                     });
-                });
-            }, 1000);
-        });
+                }
+                return minStation;
+            }, { station: {}, price_min: -1 }).station;
+
+            res.json(winner_station);
+        } else {
+            res.status(404).json({ error: 'No stations found' });
+        }
     } catch (error) {
-        console.error('Error :', error);
+        console.error('Error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

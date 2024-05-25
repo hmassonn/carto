@@ -9,7 +9,7 @@ function generateToken(length) {
 
 async function downloadZip() {
     try {
-    const url = 'https://donnees.roulez-eco.fr/opendata/instantane';
+      const url = 'https://donnees.roulez-eco.fr/opendata/instantane';
       const response = await axios({
           url,
           method: 'GET',
@@ -28,6 +28,7 @@ async function downloadZip() {
       });
     } catch (error) {
       console.error('Erreur lors du téléchargement du fichier ZIP:', error);
+      throw error; // Rejeter l'erreur pour la gérer à un niveau supérieur
     }
   }
 
